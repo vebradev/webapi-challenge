@@ -27,6 +27,19 @@ router.get("/:id", validateProjectId, (req, res) => {
     });
 });
 
+router.get("/:id/actions", validateProjectId, (req, res) => {
+  const id = req.params.id;
+  Project.getProjectActions(id)
+    .then(data => {
+      res.status(200).json(data);
+    })
+    .catch(err => {
+      res.status(500).json({
+        message: `Could not retrieve actions for project with ID ${id}.`
+      });
+    });
+});
+
 router.post("/", validateProject, (req, res) => {
   const { name, description } = req.body;
   Project.insert({ name, description })
