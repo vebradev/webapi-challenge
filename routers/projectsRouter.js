@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const Project = require("../data/helpers/projectModel");
+const Action = require("../data/helpers/actionModel");
 
 router.get("/", (req, res) => {
   Project.get()
@@ -51,6 +52,21 @@ router.post("/", validateProject, (req, res) => {
     .catch(err => {
       res.status(500).json({
         message: "Could not add project to the database."
+      });
+    });
+});
+
+router.post("/:id/actions", validateProjectId, validateAction, (req, res) => {
+  const id = req.params.id;
+  const { description, notes } = req.body;
+
+  Action.insert({ description: description, notes: notes, project_id: id })
+    .then(data => {
+      res.status(201).json(data);
+    })
+    .catch(err => {
+      res.status(500).json({
+        message: `Could not add action to project with ID ${id}.`
       });
     });
 });
@@ -108,6 +124,18 @@ async function validateProjectId(req, res, next) {
     res.status(400).json({
       message: "Wrong project ID."
     });
+  }
+}
+
+function validateAction(req, res, next) {
+  if (Object.keys(req.body) == 0) {
+    res.status(400).json({ message: "Empty project data." });
+  } else if (!req.body.description || !req.body.notes) {
+    res.status(400).json({
+      message: "Description and notes is a must. Make sure to include those."
+    });
+  } else {
+    next();
   }
 }
 
